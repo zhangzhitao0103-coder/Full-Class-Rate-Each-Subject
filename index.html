@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>英才班报名进度海报生成器</title>
+  <script src="assets/html2canvas.min.js"></script>
+  <script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags reloadFeatureFlags getFeatureFlag getFeatureFlagPayload group".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init("phc_x4f8nnybtCVSXC2iS8EUicQgVYvDcZFfDaVfc8ZqRzrP", {
+      api_host: "https://us.i.posthog.com",
+      capture_pageview: true,
+      autocapture: true,
+      person_profiles: "identified_only"
+    });
+  </script>
+  <style>
+    :root {
+      --ink: #2b1308;
+      --paper: #fff8df;
+      --red: #d10d00;
+      --deep-red: #780000;
+      --gold: #ffd35a;
+      --blue: #1164f2;
+      --line: rgba(169, 30, 10, .25);
+      --shadow: 0 18px 46px rgba(85, 16, 8, .18);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(135deg, #f9efe3 0%, #f4dfca 48%, #f7f0e7 100%);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) minmax(640px, 1fr);
+      gap: 16px;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .controls,
+    .stage {
+      border: 1px solid rgba(194, 136, 54, .35);
+      border-radius: 8px;
+      background: rgba(255, 253, 248, .94);
+      box-shadow: var(--shadow);
+    }
+
+    .controls {
+      padding: 18px;
+      overflow: auto;
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .field { margin-bottom: 14px; }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: #742115;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    input {
+      width: 100%;
+      min-height: 40px;
+      padding: 10px 11px;
+      border: 1px solid #ecd2a5;
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #d29419;
+      box-shadow: 0 0 0 3px rgba(239, 176, 38, .18);
+    }
+
+    .subject-grid {
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr);
+      gap: 8px 10px;
+      align-items: center;
+    }
+
+    .subject-grid span {
+      font-weight: 800;
+      color: #3d180d;
+    }
+
+    .hint {
+      margin: 8px 0 0;
+      color: #8a6d56;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button {
+      min-height: 42px;
+      border: 0;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #e9361f, #ad0900);
+      color: #fff;
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 9px 18px rgba(190, 31, 10, .22);
+    }
+
+    button.secondary {
+      background: linear-gradient(180deg, #ffd877, #d39619);
+      color: #5d160a;
+    }
+
+    .stage {
+      min-width: 0;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .poster-shell {
+      width: min(100%, 1063px);
+      height: 599px;
+      position: relative;
+    }
+
+    .poster {
+      position: relative;
+      width: 1063px;
+      height: 599px;
+      overflow: hidden;
+      transform-origin: top left;
+      background:
+        url("assets/progress-reference-bg.png") center / 100% 100% no-repeat,
+        linear-gradient(180deg, #f71904 0%, #b90000 58%, #e61700 100%);
+      border: 1px solid #a60000;
+      color: #111;
+      box-shadow: inset 0 0 20px rgba(255, 220, 66, .2);
+    }
+
+    .poster::before {
+      content: none;
+    }
+
+    .poster::after {
+      content: none;
+    }
+
+    .firework {
+      position: absolute;
+      width: 128px;
+      height: 128px;
+      border-radius: 50%;
+      opacity: .96;
+      background:
+        repeating-conic-gradient(from 3deg, rgba(255, 238, 96, .96) 0deg 4deg, transparent 4deg 15deg),
+        radial-gradient(circle, #fff 0 4px, #ffd731 5px 7px, transparent 8px 100%);
+      mask-image: radial-gradient(circle, transparent 0 13px, #000 14px 65px, transparent 66px 100%);
+      display: none;
+    }
+
+    .firework.left { left: 8px; top: 2px; }
+    .firework.right { right: 13px; top: 2px; transform: rotate(16deg); }
+
+    .title-row {
+      position: absolute;
+      top: 10px;
+      left: 18px;
+      right: 18px;
+      height: 82px;
+      z-index: 2;
+    }
+
+    .title-row::before {
+      content: "";
+      position: absolute;
+      left: 48px;
+      right: 48px;
+      top: 6px;
+      height: 70px;
+      border-radius: 4px;
+      background:
+        linear-gradient(180deg, rgba(255, 40, 13, .94), rgba(213, 9, 0, .94)),
+        radial-gradient(circle at 50% 0, rgba(255, 231, 88, .35), transparent 55%);
+      box-shadow: inset 0 -8px 14px rgba(129, 0, 0, .28);
+    }
+
+    .target {
+      position: absolute;
+      left: 58px;
+      top: 0;
+      z-index: 1;
+      width: 93px;
+      height: 80px;
+      display: none;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, #d60000 0 9px, #fff 10px 17px, #d60000 18px 27px, #fff 28px 36px, #d60000 37px 44px, transparent 45px);
+      filter: drop-shadow(0 4px 4px rgba(76, 0, 0, .45));
+    }
+
+    .target::before {
+      content: "";
+      position: absolute;
+      left: 48px;
+      top: 18px;
+      width: 58px;
+      height: 6px;
+      transform: rotate(-35deg);
+      transform-origin: left center;
+      background: linear-gradient(90deg, #7c3a05, #ffdc39);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.65);
+    }
+
+    .target::after {
+      content: "";
+      position: absolute;
+      left: 93px;
+      top: 2px;
+      width: 24px;
+      height: 29px;
+      background: linear-gradient(135deg, #ffe25f 0 50%, #b10000 51% 100%);
+      clip-path: polygon(0 48%, 100% 0, 72% 48%, 100% 100%);
+    }
+
+    .main-title {
+      position: absolute;
+      left: 60px;
+      right: 60px;
+      top: 18px;
+      z-index: 1;
+      margin: 0;
+      color: #fff8e8;
+      font-size: 46px;
+      line-height: 1;
+      font-weight: 1000;
+      white-space: nowrap;
+      letter-spacing: 0;
+      -webkit-text-stroke: 2px #b31700;
+      text-shadow:
+        0 2px 0 #7b0800,
+        0 5px 0 #5a0000,
+        0 8px 10px rgba(0,0,0,.55),
+        0 0 12px rgba(255, 243, 115, .88);
+      text-align: center;
+    }
+
+    .top-cards {
+      position: absolute;
+      top: 91px;
+      left: 18px;
+      right: 18px;
+      display: grid;
+      grid-template-columns: 1.06fr .88fr 1.04fr;
+      gap: 10px;
+      z-index: 2;
+    }
+
+    .card {
+      position: relative;
+      min-height: 222px;
+      border: 3px solid #fdd56a;
+      border-radius: 9px;
+      background:
+        linear-gradient(180deg, #fffdf8, #fff2df),
+        radial-gradient(circle at 50% 100%, rgba(255, 199, 84, .28), transparent 58%);
+      box-shadow:
+        inset 0 0 0 2px #d21500,
+        0 4px 10px rgba(115, 10, 0, .35);
+    }
+
+    .ribbon {
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 4;
+      height: 32px;
+      min-width: 205px;
+      padding: 4px 18px;
+      color: #fff;
+      font-size: 20px;
+      line-height: 24px;
+      font-weight: 1000;
+      text-align: center;
+      white-space: nowrap;
+      background: linear-gradient(180deg, #f12b13 0%, #bd0700 72%, #770000 100%);
+      clip-path: polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%);
+      text-shadow: 0 2px 2px rgba(70,0,0,.8);
+      box-shadow: 0 3px 5px rgba(107,0,0,.35);
+    }
+
+    .ribbon::before,
+    .ribbon::after {
+      content: "★";
+      color: #ffef59;
+      font-size: 18px;
+      margin: 0 10px;
+    }
+
+    .gauge-card { padding: 34px 22px 10px; }
+
+    .gauge-wrap {
+      position: relative;
+      height: 174px;
+      transform: translateY(-20px);
+    }
+
+    .gauge-labels span {
+      position: absolute;
+      color: #111;
+      font-size: 14px;
+      font-weight: 900;
+      display: none;
+    }
+
+    .gauge-labels span:nth-child(1) { left: -15px; bottom: 31px; }
+    .gauge-labels span:nth-child(2) { left: 10%; top: 30px; }
+    .gauge-labels span:nth-child(3) { left: 50%; top: 0px; transform: translateX(-50%); }
+    .gauge-labels span:nth-child(4) { right: 10%; top: 30px; }
+    .gauge-labels span:nth-child(5) { right: -18px; bottom: 31px; }
+
+    .gauge-canvas {
+      position: absolute;
+      left: 5px;
+      top: 26px;
+      width: 286px;
+      height: 148px;
+    }
+
+    .overall-value {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 92px;
+      color: #145be6;
+      font-size: 82px;
+      line-height: .78;
+      font-weight: 1000;
+      text-align: center;
+      letter-spacing: 0;
+      text-shadow: 0 2px 1px rgba(255,255,255,.9);
+    }
+
+    .overall-value small {
+      display: inline-block;
+      margin-left: 4px;
+      font-size: 42px;
+      line-height: 1;
+      vertical-align: baseline;
+    }
+
+    .gauge-caption {
+      margin-top: -10px;
+      color: #1059eb;
+      font-size: 21px;
+      font-weight: 1000;
+      text-align: center;
+      transform: translateY(-20px);
+    }
+
+    .gauge-caption span {
+      color: #5b4a43;
+      margin: 0 10px;
+    }
+
+    .countdown-card {
+      display: grid;
+      place-items: center;
+      padding-top: 30px;
+    }
+
+    .clock {
+      position: relative;
+      width: 188px;
+      height: 132px;
+      border-radius: 132px 132px 0 0;
+      border: 6px solid #fe7a00;
+      border-bottom: 0;
+      background: linear-gradient(180deg, #fffdf7 0%, #fff6e7 100%);
+      box-shadow: none;
+    }
+
+    .clock::before {
+      content: "";
+      position: absolute;
+      inset: 9px;
+      border-radius: 120px 120px 0 0;
+      background: repeating-conic-gradient(from 266deg at 50% 100%, transparent 0 6deg, rgba(255, 58, 39, .9) 7deg 9deg, transparent 10deg 180deg);
+      mask-image: radial-gradient(ellipse at 50% 100%, transparent 0 64px, #000 65px 100%);
+    }
+
+    .clock::after {
+      content: "";
+      position: absolute;
+      left: 6px;
+      right: 6px;
+      bottom: -1px;
+      height: 52px;
+      background: #fff6e7;
+    }
+
+    .count-text {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 25px;
+      color: #ef210b;
+      text-align: center;
+      font-weight: 1000;
+      z-index: 1;
+    }
+
+    .count-text .only {
+      display: block;
+      font-size: 24px;
+    }
+
+    .count-text .days {
+      display: inline-block;
+      font-size: 88px;
+      line-height: .9;
+    }
+
+    .count-text .unit {
+      display: inline-block;
+      margin-left: 6px;
+      font-size: 28px;
+    }
+
+    .count-sub {
+      margin-top: 5px;
+      color: #ef210b;
+      font-size: 25px;
+      font-weight: 1000;
+      text-align: center;
+    }
+
+    .deadline-card {
+      padding: 49px 18px 12px;
+    }
+
+    .calendar-top {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 48px;
+      height: 34px;
+      border-radius: 10px 10px 0 0;
+      background: linear-gradient(180deg, #f11c0a, #900000);
+      box-shadow: inset 0 2px 3px rgba(255,255,255,.55);
+    }
+
+    .calendar-top::before,
+    .calendar-top::after {
+      content: "";
+      position: absolute;
+      top: -14px;
+      width: 12px;
+      height: 41px;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #ffe765, #b06800);
+      box-shadow: 0 0 0 2px #fff3b0, 0 4px 3px rgba(80,0,0,.35);
+    }
+
+    .calendar-top::before { left: 42px; }
+    .calendar-top::after { right: 42px; }
+
+    .deadline-body {
+      position: relative;
+      height: 162px;
+      margin-top: 0;
+      padding: 39px 16px 10px 84px;
+      border: 2px solid #d46a19;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fffdf6, #fff7e6);
+      box-shadow: inset 0 0 16px rgba(255, 185, 65, .25);
+    }
+
+    .calendar-icon {
+      position: absolute;
+      left: 12px;
+      top: 42px;
+      width: 70px;
+      height: 74px;
+      transform: rotate(-5deg);
+      border: 3px solid #f07a00;
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, #f0210d 0 19px, transparent 20px),
+        linear-gradient(180deg, rgba(255,255,255,.88), rgba(255, 245, 214, .96));
+      box-shadow: 0 6px 7px rgba(110, 25, 0, .26), inset 0 0 0 2px rgba(255,255,255,.56);
+    }
+
+    .calendar-icon span {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 11px;
+      height: 37px;
+      background:
+        linear-gradient(90deg, transparent 0 31%, rgba(236, 111, 31, .55) 32% 36%, transparent 37% 64%, rgba(236, 111, 31, .55) 65% 69%, transparent 70%),
+        linear-gradient(0deg, transparent 0 31%, rgba(236, 111, 31, .5) 32% 36%, transparent 37% 64%, rgba(236, 111, 31, .5) 65% 69%, transparent 70%);
+      opacity: .95;
+    }
+
+    .calendar-icon::before,
+    .calendar-icon::after {
+      content: "";
+      position: absolute;
+      top: -9px;
+      width: 10px;
+      height: 22px;
+      border-radius: 9px;
+      background: linear-gradient(180deg, #fff06d, #e6aa13);
+      box-shadow: 0 0 0 2px #fff0a5, 0 2px 2px rgba(121, 31, 0, .28);
+    }
+
+    .calendar-icon::before { left: 12px; }
+    .calendar-icon::after { right: 12px; }
+
+    .deadline-title {
+      color: #d00000;
+      font-size: 30px;
+      line-height: 1.18;
+      font-weight: 1000;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .deadline-note {
+      margin-top: 26px;
+      color: #d00000;
+      font-size: 20px;
+      font-weight: 1000;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .bars-card {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 320px;
+      height: 205px;
+      z-index: 2;
+      padding: 25px 22px 11px 27px;
+      border: 3px solid #fed865;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fffcec, #fff4d3);
+      box-shadow: inset 0 0 0 2px #d50f00, 0 4px 9px rgba(118, 12, 0, .35);
+    }
+
+    .bars-ribbon {
+      min-width: 344px;
+      top: -10px;
+      font-size: 22px;
+    }
+
+    .capacity-note {
+      position: absolute;
+      right: 13px;
+      top: 5px;
+      font-size: 12px;
+      font-weight: 900;
+      color: #220d05;
+    }
+
+    .bar-grid {
+      display: grid;
+      grid-template-columns: 45px minmax(0, 1fr) 70px;
+      gap: 3px 10px;
+      align-items: center;
+      transform: translateY(-5px);
+    }
+
+    .subject-name {
+      font-size: 15px;
+      line-height: 1;
+      font-weight: 1000;
+      text-align: right;
+    }
+
+    .bar-track {
+      position: relative;
+      height: 10px;
+      overflow: hidden;
+      background: rgba(241, 202, 124, .28);
+      box-shadow: inset 0 0 0 1px rgba(160, 80, 0, .08);
+    }
+
+    .bar-track::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(90deg, transparent 0 170px, rgba(100, 40, 0, .12) 171px 172px);
+    }
+
+    .bar-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      background: var(--bar);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.42), 0 0 4px rgba(0,0,0,.12);
+      transition: width .2s ease;
+    }
+
+    .bar-value {
+      color: #f21313;
+      font-size: 16px;
+      line-height: 1;
+      font-weight: 1000;
+      text-align: right;
+    }
+
+    .axis {
+      position: relative;
+      height: 18px;
+      margin: 1px 84px 0 55px;
+      color: #111;
+      font-size: 14px;
+      font-weight: 900;
+      display: none;
+    }
+
+    .axis span {
+      position: absolute;
+      top: 0;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    .axis span:nth-child(1) { left: 0%; transform: none; }
+    .axis span:nth-child(2) { left: 20%; }
+    .axis span:nth-child(3) { left: 40%; }
+    .axis span:nth-child(4) { left: 60%; }
+    .axis span:nth-child(5) { left: 80%; }
+    .axis span:nth-child(6) { left: 100%; transform: translateX(-100%); }
+
+    .slogan {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 16px;
+      z-index: 2;
+      color: #fff7be;
+      font-size: 44px;
+      line-height: 1;
+      font-weight: 1000;
+      text-align: center;
+      letter-spacing: 0;
+      -webkit-text-stroke: 1px #a03000;
+      text-shadow:
+        0 2px 0 #8f2600,
+        0 5px 0 #5d0000,
+        0 0 10px rgba(255, 236, 108, .92);
+      display: none;
+    }
+
+    @media (max-width: 1080px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+      .stage {
+        min-height: 480px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="controls" aria-label="海报内容输入">
+      <h1>报名进度海报生成器</h1>
+
+      <div class="field">
+        <label for="titleInput">总标题</label>
+        <input id="titleInput" value="2026-2027学年度-英才班报名进度(实时)" />
+      </div>
+
+      <div class="field">
+        <label for="daysInput">停招倒计时天数</label>
+        <input id="daysInput" type="number" min="0" step="1" value="1" />
+      </div>
+
+      <div class="field">
+        <label for="deadlineInput">招生截止时间文本描述</label>
+        <input id="deadlineInput" value="本周日彻底封班" />
+      </div>
+
+      <div class="field">
+        <label for="deadlineNoteInput">截止补充说明</label>
+        <input id="deadlineNoteInput" value="不开放特殊申请" />
+      </div>
+
+      <div class="field">
+        <label>九科满班率小数</label>
+        <div class="subject-grid" id="subjectInputs"></div>
+        <p class="hint">支持输入 0.97 或 97，预览统一显示百分比。整体招生进度取九科平均值并保留整数位。</p>
+      </div>
+
+      <div class="actions">
+        <button id="exportBtn" type="button">导出图片</button>
+        <button class="secondary" id="resetBtn" type="button">恢复示例</button>
+      </div>
+    </section>
+
+    <section class="stage" aria-label="海报预览">
+      <div class="poster-shell">
+        <div class="poster" id="poster">
+          <div class="firework left"></div>
+          <div class="firework right"></div>
+
+          <div class="title-row">
+            <div class="target" aria-hidden="true"></div>
+            <h2 class="main-title" id="posterTitle"></h2>
+          </div>
+
+          <div class="top-cards">
+            <div class="card gauge-card">
+              <div class="ribbon">整体招生进度</div>
+              <div class="gauge-wrap">
+                <canvas class="gauge-canvas" id="gaugeCanvas" width="572" height="296" aria-hidden="true"></canvas>
+                <div class="gauge-labels" aria-hidden="true">
+                  <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+                </div>
+                <div class="overall-value"><span id="overallValue">99</span><small>%</small></div>
+              </div>
+              <div class="gauge-caption">满班 <span>|</span> 停止招生</div>
+            </div>
+
+            <div class="card countdown-card">
+              <div class="ribbon">停招倒计时</div>
+              <div>
+                <div class="clock">
+                  <div class="count-text">
+                    <span class="only">仅剩</span>
+                    <span class="days" id="daysValue">1</span><span class="unit">天</span>
+                  </div>
+                </div>
+                <div class="count-sub">即将彻底封班</div>
+              </div>
+            </div>
+
+            <div class="card deadline-card">
+              <div class="ribbon">招生截止时间</div>
+              <div class="calendar-top"></div>
+              <div class="deadline-body">
+                <div class="calendar-icon" aria-hidden="true"><span></span></div>
+                <div class="deadline-title" id="deadlineValue"></div>
+                <div class="deadline-note" id="deadlineNoteValue"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bars-card">
+            <div class="ribbon bars-ribbon">各科满班率 * 实时数据</div>
+            <div class="capacity-note">满班率=实时报名人数/班容量</div>
+            <div class="bar-grid" id="barGrid"></div>
+            <div class="axis">
+              <span>0.00%</span><span>20.00%</span><span>40.00%</span><span>60.00%</span><span>80.00%</span><span>100.00%</span>
+            </div>
+          </div>
+
+          <div class="slogan">☆ 高效学习，从有道领世开始！ ☆</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const subjects = [
+      ["语文", 92.5, "linear-gradient(90deg, #0b52d6, #156fff)"],
+      ["数学", 95, "linear-gradient(90deg, #f5cf00, #f41d07)"],
+      ["英语", 90, "linear-gradient(90deg, #02a58d, #10b6cc)"],
+      ["物理", 95, "linear-gradient(90deg, #8d21ca, #db34d8)"],
+      ["化学", 92.5, "linear-gradient(90deg, #fae900, #f13111)"],
+      ["生物", 90, "linear-gradient(90deg, #6ed00b, #82d522)"],
+      ["历史", 85, "linear-gradient(90deg, #ffd000, #ffaf00)"],
+      ["地理", 90, "linear-gradient(90deg, #1247aa, #1138a0)"],
+      ["政治", 87.5, "linear-gradient(90deg, #e6172e, #ee183c)"]
+    ];
+
+    const els = {
+      title: document.getElementById("titleInput"),
+      days: document.getElementById("daysInput"),
+      deadline: document.getElementById("deadlineInput"),
+      deadlineNote: document.getElementById("deadlineNoteInput"),
+      posterTitle: document.getElementById("posterTitle"),
+      daysValue: document.getElementById("daysValue"),
+      deadlineValue: document.getElementById("deadlineValue"),
+      deadlineNoteValue: document.getElementById("deadlineNoteValue"),
+      overallValue: document.getElementById("overallValue"),
+      gaugeCanvas: document.getElementById("gaugeCanvas"),
+      subjectInputs: document.getElementById("subjectInputs"),
+      barGrid: document.getElementById("barGrid"),
+      poster: document.getElementById("poster")
+    };
+
+    function trackEvent(eventName, properties = {}) {
+      if (!window.posthog || typeof window.posthog.capture !== "function") return;
+
+      window.posthog.capture(eventName, {
+        project_name: "各科满班率",
+        module_name: "Full-Class-Rate-Each-Subject ",
+        page_title: document.title,
+        page_path: window.location.pathname,
+        ...properties,
+      });
+    }
+
+    function normalizePercent(value) {
+      const parsed = Number.parseFloat(String(value).replace("%", ""));
+      if (!Number.isFinite(parsed)) return 0;
+      const percent = parsed <= 1 ? parsed * 100 : parsed;
+      return Math.max(0, Math.min(100, percent));
+    }
+
+    function formatInputPercent(value) {
+      return normalizePercent(value).toFixed(2);
+    }
+
+    function renderInputs() {
+      els.subjectInputs.innerHTML = "";
+      subjects.forEach(([name, value], index) => {
+        const label = document.createElement("span");
+        label.textContent = name;
+        const input = document.createElement("input");
+        input.type = "number";
+        input.step = "0.01";
+        input.min = "0";
+        input.max = "100";
+        input.value = formatInputPercent(value);
+        input.dataset.index = index;
+        input.addEventListener("input", updatePoster);
+        input.addEventListener("blur", () => {
+          input.value = formatInputPercent(input.value);
+          updatePoster();
+        });
+        els.subjectInputs.append(label, input);
+      });
+    }
+
+    function buildBars() {
+      els.barGrid.innerHTML = "";
+      subjects.forEach(([name, , color], index) => {
+        const subject = document.createElement("div");
+        subject.className = "subject-name";
+        subject.textContent = name;
+
+        const track = document.createElement("div");
+        track.className = "bar-track";
+        const fill = document.createElement("div");
+        fill.className = "bar-fill";
+        fill.style.setProperty("--bar", color);
+        fill.dataset.index = index;
+        track.append(fill);
+
+        const value = document.createElement("div");
+        value.className = "bar-value";
+        value.dataset.index = index;
+
+        els.barGrid.append(subject, track, value);
+      });
+    }
+
+    function readRates() {
+      return [...els.subjectInputs.querySelectorAll("input")].map(input => normalizePercent(input.value));
+    }
+
+    function fitTitle() {
+      els.posterTitle.style.fontSize = "44px";
+      const limit = 825;
+      let size = 46;
+      const canvas = fitTitle.canvas || (fitTitle.canvas = document.createElement("canvas"));
+      const ctx = canvas.getContext("2d");
+      while (size > 24) {
+        ctx.font = `1000 ${size}px Microsoft YaHei, PingFang SC, Arial, sans-serif`;
+        if (ctx.measureText(els.posterTitle.textContent).width <= limit) break;
+        size -= 1;
+      }
+      els.posterTitle.style.fontSize = `${size}px`;
+    }
+
+    function drawGauge(percent) {
+      const value = Math.max(0, Math.min(100, percent));
+      const canvas = els.gaugeCanvas;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.scale(2, 2);
+      ctx.lineWidth = 28;
+      ctx.lineCap = "butt";
+      const cx = 143;
+      const cy = 145;
+      const radius = 120;
+      ctx.strokeStyle = "#f4d58c";
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, Math.PI, 0);
+      ctx.stroke();
+
+      const gradient = ctx.createLinearGradient(cx - radius, 0, cx + radius, 0);
+      gradient.addColorStop(0, "#108cff");
+      gradient.addColorStop(.6, "#1267f0");
+      gradient.addColorStop(1, "#064bd4");
+      ctx.strokeStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, Math.PI, Math.PI + Math.PI * value / 100);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function updatePoster() {
+      const rates = readRates();
+      const average = Math.round(rates.reduce((sum, value) => sum + value, 0) / rates.length);
+      els.posterTitle.textContent = els.title.value.trim() || "英才班报名进度(实时)";
+      els.daysValue.textContent = Math.max(0, Math.round(Number.parseFloat(els.days.value) || 0));
+      els.deadlineValue.textContent = els.deadline.value.trim() || "本周日彻底封班";
+      els.deadlineNoteValue.textContent = els.deadlineNote.value.trim() || "不开放特殊申请";
+      els.overallValue.textContent = average;
+      drawGauge(average);
+
+      rates.forEach((rate, index) => {
+        const fill = els.barGrid.querySelector(`.bar-fill[data-index="${index}"]`);
+        const value = els.barGrid.querySelector(`.bar-value[data-index="${index}"]`);
+        fill.style.width = `${rate}%`;
+        value.textContent = `${rate.toFixed(2)}%`;
+      });
+
+      fitTitle();
+    }
+
+    function resizePoster() {
+      const shell = els.poster.parentElement;
+      const stage = shell.closest(".stage");
+      const availableWidth = Math.max(320, stage.clientWidth - 32);
+      const scale = Math.min(1, availableWidth / 1063);
+      els.poster.style.transform = `scale(${scale})`;
+      shell.style.height = `${599 * scale}px`;
+    }
+
+    function resetExample() {
+      els.title.value = "2026-2027学年度-英才班报名进度(实时)";
+      els.days.value = "1";
+      els.deadline.value = "本周日彻底封班";
+      els.deadlineNote.value = "不开放特殊申请";
+      [...els.subjectInputs.querySelectorAll("input")].forEach((input, index) => {
+        input.value = formatInputPercent(subjects[index][1]);
+      });
+      updatePoster();
+    }
+
+    async function exportPoster() {
+      const button = document.getElementById("exportBtn");
+      button.disabled = true;
+      button.textContent = "导出中...";
+      const clone = els.poster.cloneNode(true);
+      try {
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+        }
+        clone.style.position = "fixed";
+        clone.style.left = "0";
+        clone.style.top = "0";
+        clone.style.width = "1063px";
+        clone.style.height = "599px";
+        clone.style.transform = "none";
+        clone.style.pointerEvents = "none";
+        clone.style.zIndex = "2147483647";
+        document.body.appendChild(clone);
+        const sourceCanvases = els.poster.querySelectorAll("canvas");
+        const cloneCanvases = clone.querySelectorAll("canvas");
+        sourceCanvases.forEach((sourceCanvas, index) => {
+          const cloneCanvas = cloneCanvases[index];
+          if (!cloneCanvas) return;
+          cloneCanvas.width = sourceCanvas.width;
+          cloneCanvas.height = sourceCanvas.height;
+          cloneCanvas.getContext("2d").drawImage(sourceCanvas, 0, 0);
+        });
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+        const canvas = await html2canvas(clone, {
+          backgroundColor: null,
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          width: 1063,
+          height: 599,
+          windowWidth: 1063,
+          windowHeight: 599,
+          scrollX: 0,
+          scrollY: 0
+        });
+        const link = document.createElement("a");
+        link.download = `英才班报名进度-${new Date().toISOString().slice(0, 10)}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      } finally {
+        clone.remove();
+        button.disabled = false;
+        button.textContent = "导出图片";
+      }
+    }
+
+    [els.title, els.days, els.deadline, els.deadlineNote].forEach(input => {
+      input.addEventListener("input", updatePoster);
+    });
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      resetExample();
+    });
+    document.getElementById("exportBtn").addEventListener("click", () => {
+      trackEvent("button_clicked", {
+        button_name: "导出图片",
+        source: "export_button"
+      });
+      exportPoster();
+    });
+    window.addEventListener("resize", resizePoster);
+
+    renderInputs();
+    buildBars();
+    updatePoster();
+    resizePoster();
+    trackEvent("tool_page_viewed", {
+      source: "page_init"
+    });
+  </script>
+</body>
+</html>
